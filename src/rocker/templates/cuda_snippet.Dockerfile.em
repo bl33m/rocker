@@ -16,6 +16,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Enable non-free for nvidia-cuda-dev
 # https://packages.debian.org/bullseye/nvidia-cuda-dev
 
+# File conflict problem with libnvidia-ml.so.1 and libcuda.so.1
+# https://github.com/NVIDIA/nvidia-docker/issues/1551
+RUN rm -rf /usr/lib/x86_64-linux-gnu/libnv*
+RUN rm -rf /usr/lib/x86_64-linux-gnu/libcuda*
+
 RUN \
   @[if download_osstring == 'ubuntu']@
   wget https://developer.download.nvidia.com/compute/cuda/repos/@(download_osstring)@(download_verstring)/x86_64/cuda-@(download_osstring)@(download_verstring).pin \
@@ -31,16 +36,21 @@ RUN \
   && apt-get -y install cuda \
   && rm -rf /var/lib/apt/lists/* \
 
-# File conflict problem with libnvidia-ml.so.1 and libcuda.so.1
-# https://github.com/NVIDIA/nvidia-docker/issues/1551
-RUN rm -rf /usr/lib/x86_64-linux-gnu/libnv*
-RUN rm -rf /usr/lib/x86_64-linux-gnu/libcuda*
 
 # TODO(tfoote) Add documentation of why these are required
 ENV PATH /usr/local/cuda/bin${PATH:+:${PATH}}
-ENV LD_LIBRARY_PATH /usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+#ENV LD_LIBRARY_PATH /usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+
+
+# build rmagine stuff
+# Ideally this would be done as a rocker extension
+ENV SOURCE_DIR="/home/robot" 
+WORKDIR ${SOURCE_DIR}/rmagine/build
+RUN make install
 
 RUN \
   apt-get update \
   && apt-get -y install tensorrt 
+
+ENV PATH /usr/local/cuda/bin${PATH:+:${PATH}}
 
