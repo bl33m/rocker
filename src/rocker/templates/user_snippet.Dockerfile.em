@@ -39,3 +39,4 @@ WORKDIR @(dir)
 @[else]@
 # Detected user is root, which already exists so not creating new user.
 @[end if]@
+
