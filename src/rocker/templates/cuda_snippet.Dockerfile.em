@@ -39,12 +39,8 @@ RUN \
 #RUN rm -rf /usr/lib/x86_64-linux-gnu/libcuda*
 #
 ENV PATH /usr/local/cuda/bin${PATH:+:${PATH}}
-#ENV LD_LIBRARY_PATH /usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+ENV LD_LIBRARY_PATH /usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
-#RUN wget https://developer.download.nvidia.com/compute/cuda/11.6.0/local_installers/cuda_11.6.0_510.39.01_linux.run && sh cuda_11.6.0_510.39.01_linux.run --silent --toolkit 
-#RUN wget https://developer.download.nvidia.com/compute/cuda/12.3.2/local_installers/cuda_12.3.2_545.23.08_linux.run && sh cuda_12.3.2_545.23.08_linux.run --silent --toolkit 
-
-# TODO(tfoote) Add documentation of why these are required
 #ENV PATH /usr/local/cuda/bin${PATH:+:${PATH}}
 #
 
@@ -70,14 +66,16 @@ RUN git clone https://github.com/uos/rmagine.git && cd ./rmagine && mkdir ./buil
 #RUN make
 #RUN make install
 
-RUN \
-  apt-get update 
-  #&& apt-get -y install tensorrt 
+RUN rm -rf /usr/lib/x86_64-linux-gnu/libnv*
+RUN rm -rf /usr/lib/x86_64-linux-gnu/libcuda*
+
+#RUN \
+#  apt-get update \
+#  && apt-get -y install tensorrt
+WORKDIR "/home/packages/"
+#RUN tar -xzvf TensorRT-8.6.1.6.Linux.x86_64-gnu.cuda-11.8.tar.gz
+ENV LD_LIBRARY_PATH=/home/packages/TensorRT-8.6.1.6/lib:$LD_LIBRARY_PATH
+ENV TENSORRT_INCLUDE_DIR /home/packages/TensorRT-8.6.1.6/include
 
 ENV PATH /usr/local/cuda/bin${PATH:+:${PATH}}
-#ENV LD_LIBRARY_PATH /usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
-
-# File conflict problem with libnvidia-ml.so.1 and libcuda.so.1
-# https://github.com/NVIDIA/nvidia-docker/issues/1551
-#RUN rm -rf /usr/lib/x86_64-linux-gnu/libnv*
-#RUN rm -rf /usr/lib/x86_64-linux-gnu/libcuda*
+ENV LD_LIBRARY_PATH /usr/local/cuda/lib64/stubs:/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
